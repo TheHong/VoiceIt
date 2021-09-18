@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react';
 import { Note, NoteResult } from './models/notes';
 import Slider from './components/slider';
+import Fab from '@mui/material/Fab';
 import * as Icon from 'react-feather';
+import styled from 'styled-components';
 
 const App = () => {
   const [notes, setNotes] = useState<Note[]>([])
@@ -33,34 +33,90 @@ const App = () => {
       })
       .catch(error => console.log(error))
   }
+
+  const onPlay = () => {
+    // TODO: Play code
+  }
+
+  const buttonSize = {width: "100px", height: "100px"}
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" width={100} height={100} />
-        <h1>
-          Welcome!
-        </h1>
-        <Slider
-          value={tempo}
-          onChange={handleTempo}
-          range={[20, 200]}
-          icon={<Icon.Thermometer />}
-        />
-        <button onClick={onRecord}>Record</button>
-        {notes.length > 0 ?
-          <div>
-            Info={info}
-            {notes.map((note: Note) =>
-              <div>
-                Note={note.name}, Duration={note.duration}
-              </div>
-            )}
-          </div> :
-          <p>No notes yet</p>
-        }
-      </header>
-    </div>
+    <Background>
+      <h1>
+        VoiceIt!
+      </h1>
+      <EditPanel>
+        <PreferencesPanel>
+          <Slider
+            value={tempo}
+            onChange={handleTempo}
+            range={[20, 200]}
+            icon={<Icon.Clock size={50} />}
+            prefix=" bpm"
+          />
+        </PreferencesPanel>
+        <ActionPanel>
+          <Fab onClick={onRecord} style={{backgroundColor: "#bd0202", ...buttonSize}}>
+            <Icon.Mic size="50px"/>
+          </Fab>
+          <Fab onClick={onPlay} style={{backgroundColor: "#1bbd02", ...buttonSize}}>
+            <Icon.Play size="50px"/>
+          </Fab>
+        </ActionPanel>
+      </EditPanel>
+
+      {notes.length > 0 ?
+        <div>
+          Info={info}
+          {notes.map((note: Note) =>
+            <div>
+              Note={note.name}, Duration={note.duration}
+            </div>
+          )}
+        </div> :
+        <p>No notes yet</p>
+      }
+    </Background>
   );
 }
 
 export default App;
+
+const Background = styled.div`
+  display: flex;
+  flex-direction: column;
+  background-color: #282c34;
+  min-height: 100vh;
+  min-width: 100vh;
+  align-items: center;
+  justify-content: space-between;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  overflow: hidden; 
+`
+
+const EditPanel = styled.div`
+  display: flex;
+  flex-direction: row;
+  background-color: #362a52;
+  padding: 10px;
+  width: 100%;
+  flex-grow: 1;
+`
+
+const PreferencesPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  background-color: #462a52;
+  flex-grow: 1;
+  padding: 20px;
+  justify-content: space-evenly;
+`
+
+const ActionPanel = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  background-color: #2b522a;
+  flex-grow: 1;
+`
