@@ -13,6 +13,7 @@ const MUSIC_DISPLAY_ID = "This-is-music"
 const App = () => {
   const [newInfo, setNewInfo] = useState<string>("")
   const [currScore, setCurrScore] = useState<Score>([])
+  const [isRecording, setRecording] = useState(false)
 
   const [bpm, setBpm] = useState<number>(120)
   const [granularity, setGranularity] = useState<number>(4)
@@ -27,6 +28,7 @@ const App = () => {
   }
 
   const onRecord = () => {
+    setRecording(true)
     fetch(
       `http://127.0.0.1:5000/get?bpm=${bpm}&gran=${granularity}&dur=${duration}`,
       {
@@ -38,6 +40,8 @@ const App = () => {
     )
       .then(resp => resp.json())
       .then((resp: NoteResult) => {
+        setRecording(false)
+
         console.log(resp)
 
         // Get track from response
@@ -110,21 +114,12 @@ const App = () => {
           <Fab onClick={onPlay} style={{ backgroundColor: "#1bbd02", ...buttonSize }}>
             <Icon.Play size="50px" />
           </Fab>
+          <StatusPanel isVisible={isRecording}>
+            Recording in Progress
+          </StatusPanel>
           {/* TODO: Add instrument buttons */}
         </ActionPanel>
       </EditPanel>
-
-      {/* {newNotes.length > 0 ?
-        <div>
-          Info={newInfo}
-          {newNotes.map((note: Note) =>
-            <div>
-              Note={note.name}, Duration={note.duration}
-            </div>
-          )}
-        </div> :
-        <p>No notes yet</p>
-      } */}
       <MusicPanel>
         {currScore.length > 0 && <div id={MUSIC_DISPLAY_ID} />}
       </MusicPanel>
@@ -138,6 +133,13 @@ const MusicPanel = styled.div`
   background-color: white;
   overflow: scroll;
   width: 100%;
+`
+
+const StatusPanel = styled.div<{ isVisible: boolean }>`
+  ${props => !props.isVisible && "visibility: hidden;"}
+  color: red;
+  position: absolute;
+  top: 25vh;
 `
 
 const ButtonPanel = styled.div`
@@ -161,7 +163,7 @@ const Background = styled.div`
 const EditPanel = styled.div`
   display: flex;
   flex-direction: row;
-  background-color: #362a52;
+  background-color: #2e5799;
   padding: 10px;
   width: 100%;
   flex-grow: 1;

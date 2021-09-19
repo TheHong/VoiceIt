@@ -1,6 +1,7 @@
 /*
 Modified from https://github.com/0xfe/vexflow/wiki/Tutorial
 */
+import { notEqual } from 'assert';
 import Vex from 'vexflow';
 import { Note, Bar, Track, Score } from '../models/notes';
 
@@ -10,6 +11,9 @@ const APPROX_LEFT_ORNAMENT_WIDTH = 75;
 const STAVE_START = 10;
 const STAVE_MARGIN_RIGHT = 5;
 const CLEF = "bass"
+const REST_NOTE = {
+    "bass": "d/3", "treble": "b/4"
+}
 
 interface BarProps {
     previousStave?: Vex.Flow.Stave
@@ -24,7 +28,7 @@ const isSharp = (note: Note) => (
 );
 
 const getKey = (note: Note) => (
-    note.name.replace("♯", "#")
+    note.duration.includes("r") ? REST_NOTE[CLEF] : note.name.replace("♯", "#")
 )
 
 const addBar = ({ previousStave, bar, y, context }: BarProps) => {
