@@ -14,11 +14,13 @@ const App = () => {
   const [newInfo, setNewInfo] = useState<string>("")
   const [currScore, setCurrScore] = useState<Score>([])
 
-  const [tempo, setTempo] = useState<number>(120)
-  
-  const handleTempo = (event: any, value: any) => {
-    setTempo(value);
-  };
+  const [bpm, setBpm] = useState<number>(120)
+  const [granularity, setGranularity] = useState<number>(4)
+  const [duration, setDuration] = useState<number>(3)
+
+  const handleSlider = (setter: (value: any) => void) => (
+    (event: any, value: any) => { setter(value); }
+  )
 
   const getTrack = (notes: Note[]): Track => {
     // TODO:
@@ -27,7 +29,7 @@ const App = () => {
 
   const onRecord = () => {
     fetch(
-      `http://127.0.0.1:5000/get?tempo=${tempo}`,
+      `http://127.0.0.1:5000/get?bpm=${bpm}&gran=${granularity}&dur=${duration}`,
       {
         'method': 'GET',
         headers: {
@@ -38,7 +40,7 @@ const App = () => {
       .then(resp => resp.json())
       .then((resp: NoteResult) => {
         console.log(resp)
-        
+
         // Get notes from response
         const notes = resp.data;
         // Split notes into a set of bars (i.e. a track)
@@ -50,7 +52,7 @@ const App = () => {
         // TODO: Debug
         setNewNotes(resp.data)
         setNewInfo(resp.info)
-        
+
       })
       .catch(error => console.log(error))
   }
@@ -75,11 +77,25 @@ const App = () => {
       <EditPanel>
         <PreferencesPanel>
           <Slider
-            value={tempo}
-            onChange={handleTempo}
+            value={bpm}
+            onChange={handleSlider(setBpm)}
             range={[20, 200]}
-            icon={<Icon.Clock size={50} />}
+            icon={<Icon.Activity size={50} />}
             prefix=" bpm"
+          />
+          <Slider
+            value={duration}
+            onChange={handleSlider(setDuration)}
+            range={[1, 10]}
+            icon={<Icon.Clock size={50} />}
+            prefix=" s"
+          />
+          <Slider
+            value={granularity}
+            onChange={handleSlider(setGranularity)}
+            range={[0, 5]}
+            icon={<Icon.BarChart2 size={50} />}
+            restrictedVals={[1, 2, 4]}
           />
         </PreferencesPanel>
         <ActionPanel>

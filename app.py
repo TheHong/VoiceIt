@@ -20,13 +20,15 @@ def home(path):
 
 @app.route('/get', methods=['GET'])
 def getNotes():
-    BPM = int(request.args.get('tempo'))  # beats per min
-    # TIME_SIGNATURE="4/4"
-    # BEATS_PER_BAR=request.args.get('beats per bar')
-    # BARS=request.args.get('number of bars')
-    # smallest note to beat
-    MUSIC_GRANULARITY = 2**(int(request.args.get('gran'))/4)
-    DURATION = int(request.args.get('duration'))
+    bpm_input = request.args.get('bpm')
+    granularity_input = request.args.get('gran')
+    duration_input = request.args.get('dur')
+    if None in [bpm_input, granularity_input, duration_input]:
+        raise ValueError("Input required for each argument")
+
+    BPM = int(bpm_input)  # beats per min
+    MUSIC_GRANULARITY = int(granularity_input)  # 1: quarternote, 2: eigth-note, 4: 1/16 note
+    DURATION = int(duration_input)
     noteAnalyzer = note_analyzer.NoteAnalyzer(BPM, MUSIC_GRANULARITY, DURATION)
 
     return noteAnalyzer.run().to_dict()

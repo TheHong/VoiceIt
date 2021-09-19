@@ -8,10 +8,11 @@ interface SliderProps {
     range: number[]
     icon?: JSX.Element
     prefix?: string
+    restrictedVals?: number[]
 }
 
 const Slider = (props: SliderProps) => {
-    const { value, onChange, range, icon, prefix='' } = props
+    const { value, onChange, range, icon, prefix = '', restrictedVals } = props
     return <SliderWrapper>
         <div style={{ marginRight: "50px" }}>
             {icon}
@@ -23,6 +24,8 @@ const Slider = (props: SliderProps) => {
             max={range[1]}
             valueLabelDisplay="on"
             valueLabelFormat={value => `${value}${prefix}`}
+            step={!!restrictedVals ? null : undefined}
+            marks={restrictedVals?.map((val: number) => ({ value: val, label: val.toString() }))}
         />
     </SliderWrapper>
 }
