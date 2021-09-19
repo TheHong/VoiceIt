@@ -1,4 +1,4 @@
-
+import wave
 import numpy as np
 import pyaudio
 import time
@@ -6,7 +6,7 @@ import librosa
 import matplotlib.pyplot as plt
 import librosa.display
 from backend.models import NoteResult, Note
-RECORDING_PATH = "backend/recording.m4a"
+RECORDING_PATH = "backend/output.wav"
 VOICED_PROB_THRESHOLD = 0.2
 
 #TODO: COMPLETE
@@ -41,13 +41,13 @@ def most_common(lst):
 
 
 class NoteAnalyzer():
-    def __init__(self, BPM, MUSIC_GRANULARITY):
+    def __init__(self, BPM, MUSIC_GRANULARITY, DURATION):
         self.BPM = BPM  # beats per min
         # TIME_SIGNATURE="4/4"
         # BEATS_PER_BAR=request.args.get('beats per bar')
         # BARS=request.args.get('number of bars')
         self.MUSIC_GRANULARITY = MUSIC_GRANULARITY
-
+        self.DURATION=DURATION
     def seconds_to_beats(self, seconds):
         return round(seconds * self.BPM / 60*self.MUSIC_GRANULARITY)/self.MUSIC_GRANULARITY
 
@@ -97,9 +97,8 @@ class NoteAnalyzer():
 
         return filled_beat_times  # [[start, end], voiced]
 
-    def run(self):
+    def analyze(self):
         y, sr = librosa.load(RECORDING_PATH)
-
         f0, voiced_flag, voiced_probs = librosa.pyin(
             y, fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
         times = librosa.times_like(f0, sr=sr)
@@ -124,4 +123,60 @@ class NoteAnalyzer():
 
         note_results = NoteResult(
             [Note(clean_pitches[i], beat_bars[i][0][1]-beat_bars[i][0][0]) for i in range(len(beat_bars))])
-        return note_results
+        return note_results  
+
+
+    def record(self):
+        chunk = 1024  # Record in chunks of 1024 samples
+        sample_format = pyaudio.paInt16  # 16 bits per sample
+        channels = 2
+        fs = 44100  # Record at 44100 samples per second
+        seconds = self.DURATION
+        filename = "backend/output.wav"
+
+        p = pyaudio.PyAudio()  # Create an interface to PortAudio
+
+        print('Recording')
+
+        stream = p.open(format=sample_format,
+                        channels=channels,
+                        rate=fs,
+                        frames_per_buffer=chunk,
+                        input=True)
+
+        frames = []  # Initialize array to store frames
+        # Store data in chunks for 3 seconds
+        num_chunks=int(fs / chunk * seconds)
+        for i in range (4):
+            print(i+1)
+            time.sleep(60/self.BPM)
+
+        beat_per_chunk=1/self.BPM*60*fs/chunk
+        metronome_chunks=[round(i*beat_per_chunk) for i in range(0, round(num_chunks*beat_per_chunk))]
+
+        for i in range(0, num_chunks):
+            data = stream.read(chunk)
+            if i in metronome_chunks:
+                print(i//(round(1/self.BPM*60*fs/chunk)))
+            frames.append(data)
+
+        # Stop and close the stream
+        stream.stop_stream()
+        stream.close()
+        # Terminate the PortAudio interface
+        p.terminate()
+
+        print('Finished recording')
+
+        # Save the recorded data as a WAV file
+        wf = wave.open(filename, 'wb')
+        wf.setnchannels(channels)
+        wf.setsampwidth(p.get_sample_size(sample_format))
+        wf.setframerate(fs)
+        wf.writeframes(b''.join(frames))
+        wf.close()
+
+    def run(self):
+        self.record()
+        return self.analyze()
+        

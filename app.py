@@ -26,8 +26,8 @@ def getNotes():
     # BARS=request.args.get('number of bars')
     # smallest note to beat
     MUSIC_GRANULARITY = 2**(int(request.args.get('gran'))/4)
-
-    noteAnalyzer = note_analyzer.NoteAnalyzer(BPM, MUSIC_GRANULARITY)
+    DURATION = int(request.args.get('duration'))
+    noteAnalyzer = note_analyzer.NoteAnalyzer(BPM, MUSIC_GRANULARITY, DURATION)
 
     return noteAnalyzer.run().to_dict()
 
