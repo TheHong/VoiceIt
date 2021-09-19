@@ -189,8 +189,16 @@ class NoteAnalyzer():
         y, sr = librosa.load(RECORDING_PATH)
         f0, voiced_flag, voiced_probs = librosa.pyin(
             y, fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
-        times = librosa.times_like(f0, sr=sr)
 
+        times = librosa.times_like(f0, sr=sr)
+        i=0
+        while i<len(times) and voiced_probs[i]<VOICED_PROB_THRESHOLD:
+            i+=1
+
+        f0=f0[i:]
+        voiced_probs=voiced_probs[i:]
+        times=times[0:-i]
+      
         beat_times = self.find_beat_times(voiced_probs, times)
 
         beat_indices = [[[index_of_closest_in_array(times, i[0][0]),
@@ -204,12 +212,13 @@ class NoteAnalyzer():
         clean_pitches = [most_common(pitches[i[0][0]:i[0][1]]) if i[1] == True
                          else "R"
                          for i in beat_indices]  # get most common pitch
-        beat_bars = [[[self.seconds_to_beats(j) for j in i[0]], i[1]]
-                     for i in beat_times]
+        # beat_bars = [[[self.seconds_to_beats(j) for j in i[0]], i[1]]
+        #              for i in beat_times]
 
+        beat_lengths = [self.seconds_to_beats(i[0][1] - i[0][0]) for i in beat_times]
         # note in english
 
-        return [Note(clean_pitches[i], beat_bars[i][0][1]-beat_bars[i][0][0]) for i in range(len(beat_bars))]
+        return [Note(clean_pitches[i], beat_lengths[i]) for i in range(len(beat_lengths))]
 
     def record(self):
         chunk = 1024  # Record in chunks of 1024 samples
