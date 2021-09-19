@@ -4,6 +4,9 @@ import Slider from './components/slider';
 import Fab from '@mui/material/Fab';
 import * as Icon from 'react-feather';
 import styled from 'styled-components';
+import renderScore from './functions/music';
+
+const MUSIC_DISPLAY_ID = "This-is-music"
 
 const App = () => {
   const [notes, setNotes] = useState<Note[]>([])
@@ -35,10 +38,17 @@ const App = () => {
   }
 
   const onPlay = () => {
-    // TODO: Play code
+    console.log("Running music")
+
+
+    // Create an SVG renderer and attach it to the DIV element named "vf".
+    const div = document.getElementById(MUSIC_DISPLAY_ID)
+    if (!!div) {
+      renderScore({ div: div, notes: [] })
+    }
   }
 
-  const buttonSize = {width: "100px", height: "100px"}
+  const buttonSize = { width: "100px", height: "100px" }
   return (
     <Background>
       <h1>
@@ -55,11 +65,11 @@ const App = () => {
           />
         </PreferencesPanel>
         <ActionPanel>
-          <Fab onClick={onRecord} style={{backgroundColor: "#bd0202", ...buttonSize}}>
-            <Icon.Mic size="50px"/>
+          <Fab onClick={onRecord} style={{ backgroundColor: "#bd0202", ...buttonSize }}>
+            <Icon.Mic size="50px" />
           </Fab>
-          <Fab onClick={onPlay} style={{backgroundColor: "#1bbd02", ...buttonSize}}>
-            <Icon.Play size="50px"/>
+          <Fab onClick={onPlay} style={{ backgroundColor: "#1bbd02", ...buttonSize }}>
+            <Icon.Play size="50px" />
           </Fab>
         </ActionPanel>
       </EditPanel>
@@ -75,11 +85,20 @@ const App = () => {
         </div> :
         <p>No notes yet</p>
       }
+      <MusicPanel>
+        <div id={MUSIC_DISPLAY_ID} />
+      </MusicPanel>
     </Background>
   );
 }
 
 export default App;
+
+const MusicPanel = styled.div`
+  background-color: white;
+  overflow: scroll;
+  width: 100%;
+`
 
 const Background = styled.div`
   display: flex;
