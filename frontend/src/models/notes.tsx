@@ -11,3 +11,11 @@ export interface NoteResult {
     data: Note[]
     info: string
 }
+
+
+
+/*
+Below are frontend specific models
+*/
+export type Bar = Note[] // Each bar must have a whole duration (i.e. a complete bar) 
+export type Score = Bar[] // Each bar represents one voice

@@ -2,36 +2,40 @@
 Modified from https://github.com/0xfe/vexflow/wiki/Tutorial
 */
 import Vex from 'vexflow';
-import { Note } from '../models/notes';
+import { Note, Bar, Score } from '../models/notes';
 
 const BAR_WIDTH = 250;
+const APPROX_BAR_HEIGHT = 120;
+const APPROX_LEFT_ORNAMENT_WIDTH = 75;
 const STAVE_START = 10;
 const STAVE_MARGIN_RIGHT = 5;
 
 interface BarProps {
-    previousBar?: Vex.Flow.Stave
+    previousStave?: Vex.Flow.Stave
     div: HTMLElement
-    notes: Note[]
+    bar: Bar
+    y: number
+    context: Vex.IRenderContext
 }
 
-const addBar = ({ previousBar, div, notes }: BarProps, context: Vex.IRenderContext) => {
+const addBar = ({ previousStave, bar, y, context }: BarProps) => {
     // Drawing Staff ===========================================
     let newStave;
-    if (!previousBar) { // First bar
-        newStave = new Vex.Flow.Stave(STAVE_START, 0, BAR_WIDTH); // Create a stave of width 400 at position 10, 40 on the canvas.
+    if (!previousStave) { // First bar
+        newStave = new Vex.Flow.Stave(STAVE_START, y, BAR_WIDTH + APPROX_LEFT_ORNAMENT_WIDTH);
         newStave.addClef("treble").addTimeSignature("4/4");
     } else { // Next bars
         newStave = new Vex.Flow.Stave(
-            previousBar.getWidth() + previousBar.getX(),
-            0,
+            previousStave.getWidth() + previousStave.getX(),
+            y,
             BAR_WIDTH
         );
     }
     newStave.setContext(context).draw(); // Connect it to the rendering context and draw!
 
     // Drawing Notes =============================================
-    // TODO: Code out the conversion
-    // const vfNotes = notes.map((note: Note) =>
+    // TODO: Code out the conversion (possibly convert it outside)
+    // const vfNotes = bar.map((note: Note) =>
     //     new Vex.Flow.StaveNote({ clef: "treble", keys: ["c/4"], duration: "q" })
     // )
 
@@ -56,7 +60,7 @@ const addBar = ({ previousBar, div, notes }: BarProps, context: Vex.IRenderConte
 
     return newStave
 }
-const renderScore = ({ div, notes }: BarProps) => {
+const renderScore = (div: HTMLElement, score: Score) => {
     // Overwrites the div
     div.innerHTML = ""
 
@@ -67,84 +71,33 @@ const renderScore = ({ div, notes }: BarProps) => {
     // Setup renderer ====================================
     const renderer = new Vex.Flow.Renderer(div, Vex.Flow.Renderer.Backends.SVG);
     renderer.resize(// Configure the rendering context
-        STAVE_START + noteSplits.length * BAR_WIDTH + STAVE_MARGIN_RIGHT,
-        150
+        STAVE_START + APPROX_LEFT_ORNAMENT_WIDTH + noteSplits.length * BAR_WIDTH + STAVE_MARGIN_RIGHT,
+        APPROX_BAR_HEIGHT * score.length
     );
 
-
-    // Drawing Bars ===========================================
-    const context = renderer.getContext();  // Get drawing context
-    let currStave: Vex.Flow.Stave;
-    noteSplits.forEach((notes: Note[]) => {
-        currStave = addBar({ previousBar: currStave, div: div, notes: notes }, context)
+    score.forEach((bar: Bar, barNum: number) => {
+        // Drawing Bars ===========================================
+        const context = renderer.getContext();  // Get drawing context
+        let currStave: Vex.Flow.Stave;
+        noteSplits.forEach((bar: Bar) => {
+            currStave = addBar({
+                context: context,
+                previousStave: currStave,
+                div: div,
+                bar: bar,
+                y: barNum * APPROX_BAR_HEIGHT
+            })
+        })
     })
-
-    // // measure 1
-    // var staveMeasure1 = new Vex.Flow.Stave(10, 0, 300);
-    // staveMeasure1.addClef("treble").setContext(context).draw();
-
-    // var notesMeasure1 = [
-    //     new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "q" }),
-    //     new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "q" }),
-    //     new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "qr" }),
-    //     new Vex.Flow.StaveNote({ keys: ["c/4", "e/4", "g/4"], duration: "q" }),
-    // ];
-
-    // // Helper function to justify and draw a 4/4 voice
-    // Vex.Flow.Formatter.FormatAndDraw(context, staveMeasure1, notesMeasure1);
-
-    // // measure 2 - juxtaposing second measure next to first measure
-    // var staveMeasure2 = new Vex.Flow.Stave(
-    //     staveMeasure1.getWidth() + staveMeasure1.getX(),
-    //     0,
-    //     400
-    // );
-    // staveMeasure2.setContext(context).draw();
-
-    // var notesMeasure2 = [
-    //     new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "8" }),
-    //     new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "8" }),
-    //     new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "8" }),
-    //     new Vex.Flow.StaveNote({ keys: ["c/4", "e/4", "g/4"], duration: "8" }),
-    //     new Vex.Flow.StaveNote({ keys: ["c/4"], duration: "8" }),
-    //     new Vex.Flow.StaveNote({ keys: ["d/4"], duration: "8" }),
-    //     new Vex.Flow.StaveNote({ keys: ["b/4"], duration: "8" }),
-    //     new Vex.Flow.StaveNote({ keys: ["c/4", "e/4", "g/4"], duration: "8" }),
-    // ];
-    // Vex.Flow.Formatter.FormatAndDraw(context, staveMeasure2, notesMeasure2);
-
-
-    // // Setup renderer ====================================
-    // const VF = Vex.Flow;
-    // const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
-
-    // // Drawing Staff ===========================================
-    // renderer.resize(500, 200); // Configure the rendering context.
     // const context = renderer.getContext();  // Get drawing context
-    // const stave = new VF.Stave(10, 10, 400); // Create a stave of width 400 at position 10, 40 on the canvas.
-    // stave.addClef("treble").addTimeSignature("4/4");
-    // stave.setContext(context).draw(); // Connect it to the rendering context and draw!
+    // let currStave: Vex.Flow.Stave;
+    // noteSplits.forEach((bar: Bar, i: number) => {
+    //     currStave = addBar(
+    //         { previousStave: currStave, div: div, bar: bar, y: 0 },
+    //         context
+    //     )
+    // })
 
-    // // Drawing Notes =============================================
-    // const vfNotes = notes.map((note: Note) =>
-    //     new VF.StaveNote({ clef: "treble", keys: ["c/4"], duration: "q" })
-    // )
-
-    // var sampleNotes = [
-    //     // A quarter-note C.
-    //     new VF.StaveNote({ clef: "treble", keys: ["c/4"], duration: "8" }),
-    //     new VF.StaveNote({ clef: "treble", keys: ["c/4"], duration: "8" }),
-
-    //     // A quarter-note D.
-    //     new VF.StaveNote({ clef: "treble", keys: ["d/4"], duration: "4" }),
-
-    //     // A quarter-note rest. Note that the key (b/4) specifies the vertical
-    //     // position of the rest.
-    //     new VF.StaveNote({ clef: "treble", keys: ["b/4"], duration: "qr" }),
-
-    //     // A C-Major chord.
-    //     new VF.StaveNote({ clef: "treble", keys: ["c/4", "e/4", "g/4"], duration: "4" })
-    // ];
 
 
     // // Create a voice in 4/4 and add the notes from above

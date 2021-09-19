@@ -44,7 +44,7 @@ const App = () => {
     // Create an SVG renderer and attach it to the DIV element named "vf".
     const div = document.getElementById(MUSIC_DISPLAY_ID)
     if (!!div) {
-      renderScore({ div: div, notes: [] })
+      renderScore(div, [[], [], []])
     }
   }
 
@@ -138,4 +138,5 @@ const ActionPanel = styled.div`
   align-items: center;
   background-color: #2b522a;
   flex-grow: 1;
+  padding: 24px;
 `
