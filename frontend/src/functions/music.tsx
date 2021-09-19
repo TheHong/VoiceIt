@@ -2,7 +2,7 @@
 Modified from https://github.com/0xfe/vexflow/wiki/Tutorial
 */
 import Vex from 'vexflow';
-import { Note, Bar, Score } from '../models/notes';
+import { Note, Bar, Track, Score } from '../models/notes';
 
 const BAR_WIDTH = 250;
 const APPROX_BAR_HEIGHT = 120;
@@ -66,26 +66,28 @@ const renderScore = (div: HTMLElement, score: Score) => {
 
     // Splitting Music
     // TODO: Split notes into bars
-    const noteSplits: Note[][] = [[], [], [], []]
+    const sampleTrack: Track = [[], [], [], []]
 
     // Setup renderer ====================================
     const renderer = new Vex.Flow.Renderer(div, Vex.Flow.Renderer.Backends.SVG);
     renderer.resize(// Configure the rendering context
-        STAVE_START + APPROX_LEFT_ORNAMENT_WIDTH + noteSplits.length * BAR_WIDTH + STAVE_MARGIN_RIGHT,
+        // STAVE_START + APPROX_LEFT_ORNAMENT_WIDTH + score[0].length * BAR_WIDTH + STAVE_MARGIN_RIGHT,
+        STAVE_START + APPROX_LEFT_ORNAMENT_WIDTH + sampleTrack.length * BAR_WIDTH + STAVE_MARGIN_RIGHT,
         APPROX_BAR_HEIGHT * score.length
     );
 
-    score.forEach((bar: Bar, barNum: number) => {
+    score.forEach((track: Track, trackNum: number) => {
         // Drawing Bars ===========================================
         const context = renderer.getContext();  // Get drawing context
         let currStave: Vex.Flow.Stave;
-        noteSplits.forEach((bar: Bar) => {
+        // track.forEach((bar: Bar) => {
+        sampleTrack.forEach((bar: Bar) => {
             currStave = addBar({
                 context: context,
                 previousStave: currStave,
                 div: div,
                 bar: bar,
-                y: barNum * APPROX_BAR_HEIGHT
+                y: trackNum * APPROX_BAR_HEIGHT
             })
         })
     })

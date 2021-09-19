@@ -18,4 +18,5 @@ export interface NoteResult {
 Below are frontend specific models
 */
 export type Bar = Note[] // Each bar must have a whole duration (i.e. a complete bar) 
-export type Score = Bar[] // Each bar represents one voice
+export type Track = Bar[] 
+export type Score = Track[]
