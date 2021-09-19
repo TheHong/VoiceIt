@@ -9,10 +9,11 @@ interface SliderProps {
     icon?: JSX.Element
     prefix?: string
     restrictedVals?: number[]
+    disabled?: boolean
 }
 
 const Slider = (props: SliderProps) => {
-    const { value, onChange, range, icon, prefix = '', restrictedVals } = props
+    const { value, onChange, range, icon, prefix = '', restrictedVals, disabled } = props
     return <SliderWrapper>
         <div style={{ marginRight: "50px" }}>
             {icon}
@@ -26,6 +27,7 @@ const Slider = (props: SliderProps) => {
             valueLabelFormat={value => `${value}${prefix}`}
             step={!!restrictedVals ? null : undefined}
             marks={restrictedVals?.map((val: number) => ({ value: val, label: val.toString() }))}
+            disabled={disabled}
         />
     </SliderWrapper>
 }
@@ -37,4 +39,5 @@ const SliderWrapper = styled.div`
     flex-direction: row;
     align-items: center;
     width: 100%;
+    margin: 12px 0;
 `

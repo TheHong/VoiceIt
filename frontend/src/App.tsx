@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Note, NoteResult } from './models/notes';
 import Slider from './components/slider';
 import Fab from '@mui/material/Fab';
+import Button from '@mui/material/Button';
 import * as Icon from 'react-feather';
 import styled from 'styled-components';
 import renderScore from './functions/music';
@@ -25,6 +26,17 @@ const App = () => {
   const getTrack = (notes: Note[]): Track => {
     // TODO:
     return []
+  }
+
+  const onAddNewTrack = () => {
+    const div = document.getElementById(MUSIC_DISPLAY_ID)
+    if (!!div) {
+      renderScore(div, [[], [], []])
+    }
+  }
+
+  const onResetScore = () => {
+    setCurrScore([]);
   }
 
   const onRecord = () => {
@@ -59,13 +71,7 @@ const App = () => {
 
   const onPlay = () => {
     console.log("Running music")
-
-    // TODO: Borrowing this function
-    // Create an SVG renderer and attach it to the DIV element named "vf".
-    const div = document.getElementById(MUSIC_DISPLAY_ID)
-    if (!!div) {
-      renderScore(div, [[], [], []])
-    }
+    // TODO: Play music
   }
 
   const buttonSize = { width: "100px", height: "100px" }
@@ -82,6 +88,7 @@ const App = () => {
             range={[20, 200]}
             icon={<Icon.Activity size={50} />}
             prefix=" bpm"
+            disabled={currScore.length > 0}
           />
           <Slider
             value={duration}
@@ -89,6 +96,7 @@ const App = () => {
             range={[1, 10]}
             icon={<Icon.Clock size={50} />}
             prefix=" s"
+            disabled={currScore.length > 0}
           />
           <Slider
             value={granularity}
@@ -96,7 +104,15 @@ const App = () => {
             range={[0, 5]}
             icon={<Icon.BarChart2 size={50} />}
             restrictedVals={[1, 2, 4]}
+            disabled={currScore.length > 0}
           />
+          <ButtonPanel>
+            {currScore.length > 0 &&
+              <Button onClick={onResetScore} color="error">
+                Reset Score
+              </Button>
+            }
+          </ButtonPanel>
         </PreferencesPanel>
         <ActionPanel>
           <Fab onClick={onRecord} style={{ backgroundColor: "#bd0202", ...buttonSize }}>
@@ -105,6 +121,7 @@ const App = () => {
           <Fab onClick={onPlay} style={{ backgroundColor: "#1bbd02", ...buttonSize }}>
             <Icon.Play size="50px" />
           </Fab>
+          {/* TODO: Add instrument buttons */}
         </ActionPanel>
       </EditPanel>
 
@@ -132,6 +149,11 @@ const MusicPanel = styled.div`
   background-color: white;
   overflow: scroll;
   width: 100%;
+`
+
+const ButtonPanel = styled.div`
+  display: flex;
+  align-self: center;
 `
 
 const Background = styled.div`
