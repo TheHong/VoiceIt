@@ -23,11 +23,11 @@ interface BarProps {
     context: Vex.IRenderContext
 }
 
-const isSharp = (note: Note) => (
+export const isSharp = (note: Note) => (
     note.name.length > 3
 );
 
-const getKey = (note: Note) => (
+export const getKey = (note: Note) => (
     note.duration.includes("r") ? REST_NOTE[CLEF] : note.name.replace("♯", "#")
 )
 

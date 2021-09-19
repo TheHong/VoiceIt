@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { Note, NoteResult } from './models/notes';
+import { useEffect, useState } from 'react';
+import { Bar, Note, NoteResult } from './models/notes';
 import Slider from './components/slider';
 import Fab from '@mui/material/Fab';
 import Button from '@mui/material/Button';
 import * as Icon from 'react-feather';
 import styled from 'styled-components';
-import renderScore from './functions/music';
+import renderScore, { getKey, isSharp } from './functions/music';
 import { Track, Score } from './models/notes';
+import * as Tone from 'tone';
 
 const MUSIC_DISPLAY_ID = "This-is-music"
 
@@ -62,9 +63,55 @@ const App = () => {
       .catch(error => console.log(error))
   }
 
+  // const NOTE_AND_BEATS_NAME= {
+  //   "16": 0.25,
+  //   "8": 0.5,
+  //   "8d": 0.75,
+  //   "q": 1,
+  //   "qd": 1.5,
+  //   "qdd": 1.75,
+  //   "h": 2,
+  //   "hd": 3,
+  //   "hdd": 3.5,
+  //   "1": 4
+  // }
+
+  const getNoteFactor = (duration: string) => {
+    switch (duration) {
+      case "16": return 0.25
+      case "8": return 0.5
+      case "8d": return 0.75
+      case "q": return 1
+      case "qd": return 1.5
+      case "qdd": return 1.75
+      case "h": return 2
+      case "hd": return 3
+      case "hdd": return 3.5
+      case "1": return 4
+      default: return 1
+    }
+  }
+
   const onPlay = () => {
     console.log("Running music")
     // TODO: Play music
+    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+    const now = Tone.now()
+    currScore.forEach((track: Track) => {
+      let time = now;
+      track.forEach((bar: Bar) => {
+        bar.forEach((note: Note) => {
+          const increment = 60 / bpm * (getNoteFactor(note.duration))
+          if (!note.duration.includes("r")) { // If not a rest
+            const key = getKey(note);
+            const synthKey = `${key[0]}${isSharp(note) ? "#" : ""}${key.slice(-1)}`
+            synth.triggerAttack(synthKey, time);
+            synth.triggerRelease([synthKey], time+increment);
+          }
+          time += increment
+        })
+      })
+    })
   }
 
   const buttonSize = { width: "100px", height: "100px" }
