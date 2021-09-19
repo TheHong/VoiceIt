@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 import os
 
@@ -27,12 +27,14 @@ def getNotes():
         raise ValueError("Input required for each argument")
 
     BPM = int(bpm_input)  # beats per min
-    MUSIC_GRANULARITY = int(granularity_input)  # 1: quarternote, 2: eigth-note, 4: 1/16 note
+    # Granularity: 1: quarternote, 2: eigth-note, 4: 1/16 note
+    MUSIC_GRANULARITY = int(granularity_input)
     DURATION = int(duration_input)
     noteAnalyzer = note_analyzer.NoteAnalyzer(BPM, MUSIC_GRANULARITY, DURATION)
 
-    bars= noteAnalyzer.run() #list of bars of notes
-    return  {"data": [[note.__dict__ for note in bar] for bar in bars]}
+    bars = noteAnalyzer.run()  # list of bars of notes
+    noteResult = models.NoteResult(data=bars)
+    return noteResult.to_dict()
 
 
 if __name__ == "__main__":

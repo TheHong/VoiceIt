@@ -11,7 +11,6 @@ import { Track, Score } from './models/notes';
 const MUSIC_DISPLAY_ID = "This-is-music"
 
 const App = () => {
-  const [newNotes, setNewNotes] = useState<Note[]>([])
   const [newInfo, setNewInfo] = useState<string>("")
   const [currScore, setCurrScore] = useState<Score>([])
 
@@ -22,18 +21,6 @@ const App = () => {
   const handleSlider = (setter: (value: any) => void) => (
     (event: any, value: any) => { setter(value); }
   )
-
-  const getTrack = (notes: Note[]): Track => {
-    // TODO:
-    return []
-  }
-
-  const onAddNewTrack = () => {
-    const div = document.getElementById(MUSIC_DISPLAY_ID)
-    if (!!div) {
-      renderScore(div, [[], [], []])
-    }
-  }
 
   const onResetScore = () => {
     setCurrScore([]);
@@ -53,18 +40,20 @@ const App = () => {
       .then((resp: NoteResult) => {
         console.log(resp)
 
-        // Get notes from response
-        const notes = resp.data;
-        // Split notes into a set of bars (i.e. a track)
-        const track = getTrack(notes)
+        // Get track from response
+        const newTrack = resp.data;
+        const newScore = [...currScore, newTrack];
         // Add track to the set of tracks (i.e. the score)
-        setCurrScore([...currScore, track])
+        setCurrScore(newScore)
 
+        // Render the score
+        const div = document.getElementById(MUSIC_DISPLAY_ID)
+        if (!!div) {
+          renderScore(div, newScore)
+        }
 
         // TODO: Debug
-        setNewNotes(resp.data)
         setNewInfo(resp.info)
-
       })
       .catch(error => console.log(error))
   }
@@ -125,7 +114,7 @@ const App = () => {
         </ActionPanel>
       </EditPanel>
 
-      {newNotes.length > 0 ?
+      {/* {newNotes.length > 0 ?
         <div>
           Info={newInfo}
           {newNotes.map((note: Note) =>
@@ -135,9 +124,9 @@ const App = () => {
           )}
         </div> :
         <p>No notes yet</p>
-      }
+      } */}
       <MusicPanel>
-        <div id={MUSIC_DISPLAY_ID} />
+        {currScore.length > 0 && <div id={MUSIC_DISPLAY_ID} />}
       </MusicPanel>
     </Background>
   );

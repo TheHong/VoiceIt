@@ -4,11 +4,12 @@ These must agree with models.py in the backend
 
 export interface Note {
     name: string
-    duration: number
+    duration: string
+    tie: boolean
 }
 
 export interface NoteResult {
-    data: Note[]
+    data: Track
     info: string
 }
 
