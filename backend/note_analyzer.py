@@ -10,21 +10,38 @@ RECORDING_PATH = "backend/output.wav"
 VOICED_PROB_THRESHOLD = 0.2
 
 #TODO: COMPLETE
+# BEATS_AND_NOTE_NAME = {
+#     0.25: "16",
+#     0.5: "8",
+#     0.75: "8d",
+#     1: "q",
+#     # 1.25: "4~16",
+#     1.5: "qd",
+#     1.75: "qdd",
+#     2: "h",
+#     # 2.25: "2~16",
+#     # 2.5: "2~8",
+#     # 2.75: "2~8~16",
+#     3: "hd",
+#     # 3.25: "2.~8",
+#     3.5: "hdd",
+#     4: "1"
+# }
 BEATS_AND_NOTE_NAME = {
     0.25: "16",
     0.5: "8",
-    0.75: "8.",
-    1: "4",
+    0.75: "8d",
+    1: "q",
     1.25: "4~16",
-    1.5: "4.",
-    1.75: "4..",
-    2: "2",
+    1.5: "qd",
+    1.75: "qdd",
+    2: "h",
     2.25: "2~16",
     2.5: "2~8",
     2.75: "2~8~16",
-    3: "2.",
+    3: "hd",
     3.25: "2.~8",
-    3.5: "2..",
+    3.5: "hdd",
     4: "1"
 }
 
@@ -39,6 +56,68 @@ def beat_name(beat):
 def most_common(lst):
     return max(set(lst), key=lst.count)
 
+def transform_note(note_name, note_duration, note_tie):
+    name=note_name[0:-1].lower() +"/" + note_name[-1] if note_name!="R" else "b/4"
+    duration=BEATS_AND_NOTE_NAME[note_duration] 
+    if note_name=="R": duration+="r" 
+    return Note(name, duration, note_tie)
+
+def split_note(note):
+    #note: name, duration (#beats), tie
+    #out list of note: name, duration(string), tie
+    
+    if note.duration not in BEATS_AND_NOTE_NAME.keys():
+        note_name_list=list(BEATS_AND_NOTE_NAME.keys())
+        # print(note_name_list)
+        j=len(note_name_list)-1
+        remain=note.duration
+        notes=[]
+        while j>-1 and remain>0:
+            # print(notes, note_name_list[j])
+            if note_name_list[j]<= remain:
+                remain-=note_name_list[j]
+                notes.append(transform_note(note.name, note_name_list[j], remain>0 and note.tie))
+            j-=1
+        return notes
+    else:
+        return [transform_note(note.name, note.duration, note.tie)]
+
+def get_track(notes):
+    old_count=0
+    new_count=0
+    track=[]
+    bar=[]
+    if notes[0].name=="R":
+        notes=notes[1:]
+    if notes[-1].name=="R":
+        notes=notes[:-1]
+    for i in notes:
+        # print(counter, [i.duration for i in bar])
+        new_count+=i.duration
+        if new_count<4:
+            bar+= split_note(i)
+            old_count+=i.duration
+        elif new_count==4:
+            bar+=split_note(i)
+            track.append(bar)
+            bar=[]
+            old_count=0
+            new_count=0
+        else:      
+            # print([i.duration for i in bar])   
+            bar+=split_note(Note(i.name, 4-old_count, i.name!="R"))
+            track.append(bar)
+            bar=split_note(Note(i.name, new_count-4, i.tie))
+            new_count=new_count-4
+            old_count=new_count
+        # print(new_count, [i.duration for i in bar])
+
+    #fill last bars
+    if bar:
+        bar+split_note(Note(i.name, 4-new_count, i.tie))
+        track.append(bar)
+    
+    return track
 
 class NoteAnalyzer():
     def __init__(self, BPM, MUSIC_GRANULARITY, DURATION):
@@ -109,7 +188,7 @@ class NoteAnalyzer():
                         index_of_closest_in_array(times, i[0][1])],
                          i[1]] for i in beat_times]
 
-        pitches = [librosa.hz_to_note(i, octave=False) if not np.isnan(i)
+        pitches = [librosa.hz_to_note(i) if not np.isnan(i)
                    else np.nan
                    for i in f0]  # get most common pitch
 
@@ -121,10 +200,10 @@ class NoteAnalyzer():
 
         # note in english
 
-        note_results = NoteResult(
-            [Note(clean_pitches[i], beat_bars[i][0][1]-beat_bars[i][0][0]) for i in range(len(beat_bars))])
-        return note_results  
+        return [Note(clean_pitches[i], beat_bars[i][0][1]-beat_bars[i][0][0]) for i in range(len(beat_bars))]  
 
+
+    
 
     def record(self):
         chunk = 1024  # Record in chunks of 1024 samples
@@ -178,5 +257,5 @@ class NoteAnalyzer():
 
     def run(self):
         self.record()
-        return self.analyze()
+        return get_track(self.analyze()) #list of bars of notes
         
