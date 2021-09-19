@@ -5,18 +5,25 @@ import Fab from '@mui/material/Fab';
 import * as Icon from 'react-feather';
 import styled from 'styled-components';
 import renderScore from './functions/music';
+import { Track, Score } from './models/notes';
 
 const MUSIC_DISPLAY_ID = "This-is-music"
 
 const App = () => {
-  const [notes, setNotes] = useState<Note[]>([])
-  const [info, setInfo] = useState<string>("")
+  const [newNotes, setNewNotes] = useState<Note[]>([])
+  const [newInfo, setNewInfo] = useState<string>("")
+  const [currScore, setCurrScore] = useState<Score>([])
 
   const [tempo, setTempo] = useState<number>(120)
-
+  
   const handleTempo = (event: any, value: any) => {
     setTempo(value);
   };
+
+  const getTrack = (notes: Note[]): Track => {
+    // TODO:
+    return []
+  }
 
   const onRecord = () => {
     fetch(
@@ -31,8 +38,19 @@ const App = () => {
       .then(resp => resp.json())
       .then((resp: NoteResult) => {
         console.log(resp)
-        setNotes(resp.data)
-        setInfo(resp.info)
+        
+        // Get notes from response
+        const notes = resp.data;
+        // Split notes into a set of bars (i.e. a track)
+        const track = getTrack(notes)
+        // Add track to the set of tracks (i.e. the score)
+        setCurrScore([...currScore, track])
+
+
+        // TODO: Debug
+        setNewNotes(resp.data)
+        setNewInfo(resp.info)
+        
       })
       .catch(error => console.log(error))
   }
@@ -40,7 +58,7 @@ const App = () => {
   const onPlay = () => {
     console.log("Running music")
 
-
+    // TODO: Borrowing this function
     // Create an SVG renderer and attach it to the DIV element named "vf".
     const div = document.getElementById(MUSIC_DISPLAY_ID)
     if (!!div) {
@@ -74,10 +92,10 @@ const App = () => {
         </ActionPanel>
       </EditPanel>
 
-      {notes.length > 0 ?
+      {newNotes.length > 0 ?
         <div>
-          Info={info}
-          {notes.map((note: Note) =>
+          Info={newInfo}
+          {newNotes.map((note: Note) =>
             <div>
               Note={note.name}, Duration={note.duration}
             </div>
