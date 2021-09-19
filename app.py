@@ -31,7 +31,8 @@ def getNotes():
     DURATION = int(duration_input)
     noteAnalyzer = note_analyzer.NoteAnalyzer(BPM, MUSIC_GRANULARITY, DURATION)
 
-    return noteAnalyzer.run().to_dict()
+    bars= noteAnalyzer.run() #list of bars of notes
+    return  {"data": [[note.__dict__ for note in bar] for bar in bars]}
 
 
 if __name__ == "__main__":
