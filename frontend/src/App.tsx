@@ -97,6 +97,11 @@ const App = () => {
     // TODO: Play music
     const synth = new Tone.PolySynth(Tone.Synth).toDestination();
     const now = Tone.now()
+    // const membraneSynth = new Tone.MembraneSynth().toDestination();
+    // for (let i =0; i< 6; i++){
+    //   console.log("DF")
+    //   membraneSynth.triggerAttackRelease("C2", now+i)
+    // }
     currScore.forEach((track: Track) => {
       let time = now;
       track.forEach((bar: Bar) => {
@@ -106,7 +111,7 @@ const App = () => {
             const key = getKey(note);
             const synthKey = `${key[0]}${isSharp(note) ? "#" : ""}${key.slice(-1)}`
             synth.triggerAttack(synthKey, time);
-            synth.triggerRelease([synthKey], time+increment);
+            synth.triggerRelease([synthKey], time + increment);
           }
           time += increment
         })
